@@ -1,18 +1,46 @@
-#include "driver/gpio.h"
-#include "driver/mcpwm.h"
+#include <stdint.h>
+#include "driver/ledc.h"
 
-void motor1_init();
+struct motor 
+{
+    uint8_t gpio_a;
+    uint8_t gpio_b;
+    ledc_channel_config_t pwm;
+};
 
-void motor1_move_foward();
+typedef struct motor motor_t;
 
-void motor1_move_backward();
+/*
+    Init ledc timer
+*/
+void motor_timer_init();
 
-void motor1_stop();
+/*
+    Initialize motor1
+*/
+motor_t motor_1_init();
 
-void motor_2_init();
+/*
+    Initialize motor2
+*/
+motor_t motor_2_init();
 
-void motor2_move_foward();
+/*
+    Set motor Speed.
+*/
+void motor_set_speed(motor_t, uint16_t);
 
-void motor2_move_backward();
+/*
+    Makes a given motor fowards
+*/
+void motor_move_foward(motor_t);
 
-void motor2_stop();
+/*
+    Makes a given motor backwards
+*/
+void motor_move_backward(motor_t);
+
+/*
+    Makes a given motor stop
+*/
+void motor_stop(motor_t);
