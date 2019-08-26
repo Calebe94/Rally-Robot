@@ -11,6 +11,11 @@ struct motor
 typedef struct motor motor_t;
 
 /*
+    Convert percentage to duty cycle
+*/
+uint16_t percentage_to_duty(uint8_t percentage);
+
+/*
     Init ledc timer
 */
 void motor_timer_init();

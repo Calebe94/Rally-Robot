@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/queue.h"
@@ -10,6 +11,15 @@
 
 #include "config.h"
 #include "motor.h"
+
+uint16_t percentage_to_duty(uint8_t percentage)
+{
+    if (percentage > 99)
+    {
+        percentage = 100;
+    }
+    return (uint16_t) percentage*pow(2, MOTOR_DUTY_RES)/100;
+}
 
 void motor_timer_init()
 {
