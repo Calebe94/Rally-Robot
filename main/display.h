@@ -9,3 +9,5 @@
 #include "freertos/semphr.h"
 
 void display_setup(void);
+
+void display_pwm(uint8_t porcentage);

@@ -20,10 +20,13 @@ static int pulses = 0;
 
 char pulses_string[20]; 
 char turns_string[20];
+char string_porcentage[20];
 
 static void task_display_print_info(void *arg)
 {
     uint32_t io_num;
+    
+    ssd1306_printFixed(0,  8, "Encoder 1", STYLE_BOLD);
     
     for(;;) 
     {
@@ -32,15 +35,20 @@ static void task_display_print_info(void *arg)
             if(io_num == ENCODER_1)
             {
                 pulses++;
-                printf("pulses %d - turns %d \n", pulses, (int)pulses/16);
-                ssd1306_printFixed(0,  8, "Encoder 1", STYLE_BOLD);
+                // printf("pulses %d - turns %d \n", pulses, (int)pulses/16);
                 sprintf(pulses_string, "pulses: %d", pulses);
                 sprintf(turns_string, "turns: %d", (int)pulses/16);
                 ssd1306_printFixed(0, 24, pulses_string, STYLE_NORMAL);
                 ssd1306_printFixed(0, 38, turns_string, STYLE_NORMAL);
+                ssd1306_printFixed(0, 52, string_porcentage, STYLE_NORMAL);
             }
         }
     }    
+}
+
+void display_pwm(uint8_t porcentage)
+{
+    sprintf(string_porcentage, "PWM: %d", porcentage);
 }
 
 void display_setup(void)
