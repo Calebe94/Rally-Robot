@@ -1,12 +1,9 @@
-#include "driver/gpio.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/queue.h"
+#include <stdint.h>
 
-#define ENCODER_1 GPIO_NUM_4
-#define ENCODER_2 GPIO_NUM_5
+void encoders_init();
 
-xQueueHandle encoders_queue;
+void encoders_start();
 
-void encoder_init();
+uint32_t get_pulses_encoder_1();
 
-// void encoder_handle(void *arg);
+uint32_t get_pulses_encoder_2();

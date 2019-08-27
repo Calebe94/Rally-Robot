@@ -1,19 +1,23 @@
-#include <stdio.h>
 #include <stdint.h>
 #include "driver/gpio.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
 
+#include "config.h"
 #include "encoder.h"
 
-static void IRAM_ATTR encoder_handle(void *arg)
+static uint32_t pulses_encoder_1 = 0;
+static uint32_t pulses_encoder_2 = 0;
+
+static void IRAM_ATTR encoder_1_handle(void *arg)
 {
-    uint32_t gpio_num = (uint32_t) arg;
-    xQueueSendFromISR(encoders_queue, &gpio_num, NULL);
+    pulses_encoder_1++;
 }
 
-void encoder_init()
+static void IRAM_ATTR encoder_2_handle(void *arg)
+{
+    pulses_encoder_2++;
+}
+
+void encoders_init()
 {
     gpio_config_t io_conf;
 
@@ -30,9 +34,20 @@ void encoder_init()
     gpio_config(&io_conf);
 
     gpio_install_isr_service(0);
+}
 
-    gpio_isr_handler_add(ENCODER_1, encoder_handle, (void*) ENCODER_1);
-    gpio_isr_handler_add(ENCODER_2, encoder_handle, (void*) ENCODER_2);
+void encoders_start()
+{
+    gpio_isr_handler_add(ENCODER_1, encoder_1_handle, (void*) ENCODER_1);
+    gpio_isr_handler_add(ENCODER_2, encoder_2_handle, (void*) ENCODER_2);
+}
 
-    encoders_queue = xQueueCreate(10, sizeof(uint32_t));
+uint32_t get_pulses_encoder_1()
+{
+    return pulses_encoder_1;
+}
+
+uint32_t get_pulses_encoder_2()
+{
+    return pulses_encoder_2;
 }

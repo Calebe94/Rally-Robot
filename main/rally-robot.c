@@ -11,17 +11,86 @@
 #include "display.h"
 #include "serial.h"
 #include "commands.h"
+#include "pid.h"
 
 static motor_t motor1;
 
-static int pulses = 0;
+static uint32_t setpoint_pulses = 0;
+static uint32_t pulses = 0;
+static uint8_t porcentage = 35;
+
+#define PORCENT_40  4/10
+#define PORCENT_20  2/10
+
+uint8_t falling = 0;
+void pwm_handle(void *arg)
+{
+    pidp_t pid1 = {
+        .error = 0,
+        .last_sample = 0,
+        .P = 0,
+        .I = 0,
+        .D = 0,
+        .last_process = 0
+    };
+
+    pidp_t pid2 = {
+        .error = 0,
+        .last_sample = 0,
+        .P = 0,
+        .I = 0,
+        .D = 0,
+        .last_process = 0
+    };
+    pidp_t pid3 = {
+        .error = 0,
+        .last_sample = 0,
+        .P = 0,
+        .I = 0,
+        .D = 0,
+        .last_process = 0
+    };
+
+    while(1)
+    {
+        motor_set_speed(motor1, percentage_to_duty(porcentage));
+        
+        pulses = get_pulses_encoder_1();
+        
+        porcentage++;
+
+        vTaskDelay(300/portTICK_RATE_MS);
+        if(porcentage < 91 && pulses < (setpoint_pulses*PORCENT_40)+1) 
+        {        
+            porcentage++;
+            vTaskDelay(pid_process(&pid1, setpoint_pulses*PORCENT_40, pulses) / portTICK_RATE_MS);
+        }
+        else if( porcentage == 90 )
+        {
+            vTaskDelay(pid_process(&pid2, setpoint_pulses*PORCENT_40+setpoint_pulses*PORCENT_20, pulses) / portTICK_RATE_MS);
+            if ( pulses > (setpoint_pulses*PORCENT_40+setpoint_pulses*PORCENT_20))
+            {
+                porcentage = 89;
+            }
+            falling = 1;
+        }
+        else
+        {
+            porcentage--;
+            vTaskDelay(pid_process(&pid3, setpoint_pulses, pulses) / portTICK_RATE_MS);
+        }
+
+    }
+}
 
 static int set_pulses(int argc, char **argv)
 {
     if (argc > 1)
     {
-        pulses = atoi(argv[1]);
-        printf("\nPulses setted to %d\n", pulses);
+        setpoint_pulses = atoi(argv[1]);
+        printf("\nPulses setted to %d\n", setpoint_pulses);
+        encoders_start();
+        xTaskCreate(&pwm_handle, "pwm_handle", 2048, NULL, 1, NULL);
     }
     else
     {
@@ -30,29 +99,16 @@ static int set_pulses(int argc, char **argv)
     return 0;
 }
 
-// MAX 8192
-// MID 4096
-// MIN 0
-/*
-    100% = 8192
-    x    = y
-    x*8192 = 100*y
-    
-    y=x*8192/100
-*/
-
-void setup()
+static void setup()
 {
-    encoder_init();
-    display_setup();
-
+    encoders_init();
+    display_init();
     motor_timer_init();
+    motor1 = motor_1_init();
 
     register_commands();
 
     serial_init();
-
-    motor1 = motor_1_init();
 
     motor_move_foward(motor1);
 
@@ -69,14 +125,17 @@ int app_main(void)
 {
     setup();
 
-    // uint8_t porcentage = 0;
+    display_show_header();
 
     while(1)
     {
-        // porcentage+=10;
-        // motor_set_speed(motor1, percentage_to_duty(porcentage));
-        // printf("Porcentage PWM: %d\n", porcentage);
-        // display_pwm(porcentage);
-        vTaskDelay(1000 / portTICK_RATE_MS);
+        display_encoder_1_pulses(pulses);
+        display_encoder_1_turns((uint32_t)pulses/16);
+        if(porcentage > 99)
+        {
+            porcentage = 100;
+        }
+        display_pwm_1_porcentage(porcentage);
+        vTaskDelay(50/portTICK_RATE_MS);
     }
 }
