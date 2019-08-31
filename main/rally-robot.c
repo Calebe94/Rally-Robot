@@ -23,63 +23,98 @@ static uint8_t porcentage = 35;
 #define PORCENT_20  2/10
 
 uint8_t falling = 0;
+
+void handle_pulses(void *setpoint)
+{
+    // int pulses = (int)*setpoint;
+    // pulses=setpoint_pulses;
+    
+    int pwmMin=35;
+    int pwmMax=60;
+    int pulseR = 0;
+    int pwm = 0;
+    int pwm2 = 0;
+    int rangeAcc=(setpoint_pulses/100)*20;
+    int rangeDeacc=(setpoint_pulses/100)*30;
+    int rangeMax=setpoint_pulses-rangeAcc-rangeDeacc;
+    // printf("Task Created!\n");
+    int pulR = 0;
+
+    for(pwm = pwmMin; pwm <= pwmMax; pwm++)
+    {
+        pulR = get_pulses_encoder_1();
+        motor_set_speed(motor1, percentage_to_duty(pwm));
+        printf("Rising pulR: %d - rangeAcc: %d - PWM Porcentage: %d - Pulses: %d\n",pulR, rangeAcc, pwm, pulR);
+        //set(pwm)
+        vTaskDelay(10/portTICK_RATE_MS);
+        // readpulse
+
+        if (pulR <= rangeAcc)
+        {
+            break;
+        }
+    }
+
+    while(pulR < rangeMax)
+    {
+        pulR = get_pulses_encoder_1();
+    }
+
+    for(pwm2 = pwmMax; pwm2 <= pwmMin; pwm2--)
+    {
+        // sleep 1
+        //set(pwm2)
+        motor_set_speed(motor1, percentage_to_duty(pwm2));
+        pulR = get_pulses_encoder_1();
+        printf("PWM Porcentage: %d - Pulses: %d\n", pwm2, pulR);
+        // vTaskDelay(100/portTICK_RATE_MS);
+        int pulseR = 0;
+        if (pulR <= rangeDeacc)
+        {
+            break;
+        }
+    }
+}
 void pwm_handle(void *arg)
 {
-    pidp_t pid1 = {
-        .error = 0,
-        .last_sample = 0,
-        .P = 0,
-        .I = 0,
-        .D = 0,
-        .last_process = 0
-    };
-
-    pidp_t pid2 = {
-        .error = 0,
-        .last_sample = 0,
-        .P = 0,
-        .I = 0,
-        .D = 0,
-        .last_process = 0
-    };
-    pidp_t pid3 = {
-        .error = 0,
-        .last_sample = 0,
-        .P = 0,
-        .I = 0,
-        .D = 0,
-        .last_process = 0
-    };
+    int pwmMin=35;
+    int pwmMax=90;
+    int pulseR = 0;
+    int pwm = 0;
+    int pwm2 = 0;
+    int rangeAcc=(setpoint_pulses/100)*23;
+    int rangeDeacc=setpoint_pulses-300;
+    int rangeMax=setpoint_pulses-rangeAcc-rangeDeacc;
 
     while(1)
     {
         motor_set_speed(motor1, percentage_to_duty(porcentage));
-        
         pulses = get_pulses_encoder_1();
-        
-        porcentage++;
 
-        vTaskDelay(300/portTICK_RATE_MS);
-        if(porcentage < 91 && pulses < (setpoint_pulses*PORCENT_40)+1) 
-        {        
-            porcentage++;
-            vTaskDelay(pid_process(&pid1, setpoint_pulses*PORCENT_40, pulses) / portTICK_RATE_MS);
-        }
-        else if( porcentage == 90 )
+        printf("rangeAcc: %d - rangeDeacc: %d - PWM Porcentage: %d - Pulses: %d\n", rangeAcc, rangeDeacc, porcentage, pulses);
+
+        if(porcentage < pwmMax && pulses < rangeAcc)
         {
-            vTaskDelay(pid_process(&pid2, setpoint_pulses*PORCENT_40+setpoint_pulses*PORCENT_20, pulses) / portTICK_RATE_MS);
-            if ( pulses > (setpoint_pulses*PORCENT_40+setpoint_pulses*PORCENT_20))
+            porcentage++;
+            vTaskDelay(100/portTICK_RATE_MS);
+            if(porcentage == 100)
             {
-                porcentage = 89;
+                porcentage = 100;
             }
-            falling = 1;
         }
-        else
+        else if(pulses > rangeDeacc )
         {
             porcentage--;
-            vTaskDelay(pid_process(&pid3, setpoint_pulses, pulses) / portTICK_RATE_MS);
+            if (pulses < setpoint_pulses && porcentage < 30)
+            {
+                porcentage = 30;
+            }
+            else if(pulses > setpoint_pulses && porcentage > 0)
+            {
+                porcentage = 0;
+            }
+            vTaskDelay(100/portTICK_RATE_MS);
         }
-
     }
 }
 
@@ -90,7 +125,8 @@ static int set_pulses(int argc, char **argv)
         setpoint_pulses = atoi(argv[1]);
         printf("\nPulses setted to %d\n", setpoint_pulses);
         encoders_start();
-        xTaskCreate(&pwm_handle, "pwm_handle", 2048, NULL, 1, NULL);
+        xTaskCreate(&pwm_handle, "pwm_handle", 4096, NULL, 1, NULL);
+        // handle_pulses(NULL);
     }
     else
     {
