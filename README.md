@@ -24,4 +24,13 @@ GPIO05 - Encoder 2
 
 Foi adicionado uma interrupção nos terminais de entrada 4 e 5, para que cada interrupção seja um bit do encoder.
 
-Link: https://pt.aliexpress.com/item/1337327225.html?spm=a2g0s.9042311.0.0.2742b90abA1dot
+## Obstacle Detaction Sensor Module FC-51
+
+![](http://qqtrading.com.my/image/contents/Arduino-IR-Collision-Detection-Module-Pin-Outs.jpg)
+
+* [FC-51 Module](http://qqtrading.com.my/ir-infrared-obstacle-detaction-sensor-module-fc-5)
+
+# Links
+
+* [MEMBUAT ROBOT LINE FOLLOWER SEDERHANA DENGAN ARDUINO](http://www.jogjarobotika.com/blog/membuat-robot-line-follower-sederhana-dengan-arduino-b105.html)
+* [Motor Smart Robot Car Chassis](https://pt.aliexpress.com/item/1337327225.html?spm=a2g0s.9042311.0.0.2742b90abA1dot)

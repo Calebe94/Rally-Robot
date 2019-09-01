@@ -49,3 +49,11 @@
 #define PID_KP  1   // Defaul 1
 #define PID_KI  0   // Defaul 0
 #define PID_KD  0   // Defaul 0
+
+/*******************************
+**********LINE SENSOR**********
+*******************************/
+
+#define LINE_SENSOR_1   GPIO_NUM_34
+#define LINE_SENSOR_2   GPIO_NUM_35
+#define LINE_SENSOR_3   GPIO_NUM_32
