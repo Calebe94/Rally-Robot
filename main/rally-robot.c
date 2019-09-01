@@ -11,6 +11,7 @@
 #include "display.h"
 #include "serial.h"
 #include "commands.h"
+#include "line_sensor.h"
 #include "pid.h"
 
 static motor_t motor1;
@@ -19,72 +20,11 @@ static uint32_t setpoint_pulses = 0;
 static uint32_t pulses = 0;
 static uint8_t porcentage = 35;
 
-#define PORCENT_40  4/10
-#define PORCENT_20  2/10
-
-uint8_t falling = 0;
-
-void handle_pulses(void *setpoint)
-{
-    // int pulses = (int)*setpoint;
-    // pulses=setpoint_pulses;
-    
-    int pwmMin=35;
-    int pwmMax=60;
-    int pulseR = 0;
-    int pwm = 0;
-    int pwm2 = 0;
-    int rangeAcc=(setpoint_pulses/100)*20;
-    int rangeDeacc=(setpoint_pulses/100)*30;
-    int rangeMax=setpoint_pulses-rangeAcc-rangeDeacc;
-    // printf("Task Created!\n");
-    int pulR = 0;
-
-    for(pwm = pwmMin; pwm <= pwmMax; pwm++)
-    {
-        pulR = get_pulses_encoder_1();
-        motor_set_speed(motor1, percentage_to_duty(pwm));
-        printf("Rising pulR: %d - rangeAcc: %d - PWM Porcentage: %d - Pulses: %d\n",pulR, rangeAcc, pwm, pulR);
-        //set(pwm)
-        vTaskDelay(10/portTICK_RATE_MS);
-        // readpulse
-
-        if (pulR <= rangeAcc)
-        {
-            break;
-        }
-    }
-
-    while(pulR < rangeMax)
-    {
-        pulR = get_pulses_encoder_1();
-    }
-
-    for(pwm2 = pwmMax; pwm2 <= pwmMin; pwm2--)
-    {
-        // sleep 1
-        //set(pwm2)
-        motor_set_speed(motor1, percentage_to_duty(pwm2));
-        pulR = get_pulses_encoder_1();
-        printf("PWM Porcentage: %d - Pulses: %d\n", pwm2, pulR);
-        // vTaskDelay(100/portTICK_RATE_MS);
-        int pulseR = 0;
-        if (pulR <= rangeDeacc)
-        {
-            break;
-        }
-    }
-}
 void pwm_handle(void *arg)
 {
-    int pwmMin=35;
-    int pwmMax=90;
-    int pulseR = 0;
-    int pwm = 0;
-    int pwm2 = 0;
+    const int pwmMax=90;
     int rangeAcc=(setpoint_pulses/100)*23;
     int rangeDeacc=setpoint_pulses-300;
-    int rangeMax=setpoint_pulses-rangeAcc-rangeDeacc;
 
     while(1)
     {
@@ -126,7 +66,6 @@ static int set_pulses(int argc, char **argv)
         printf("\nPulses setted to %d\n", setpoint_pulses);
         encoders_start();
         xTaskCreate(&pwm_handle, "pwm_handle", 4096, NULL, 1, NULL);
-        // handle_pulses(NULL);
     }
     else
     {
@@ -141,10 +80,12 @@ static void setup()
     display_init();
     motor_timer_init();
     motor1 = motor_1_init();
+    line_sensor_init();
+    line_sensor_start();
 
-    register_commands();
+    // register_commands();
 
-    serial_init();
+    // serial_init();
 
     motor_move_foward(motor1);
 
@@ -162,6 +103,7 @@ int app_main(void)
     setup();
 
     display_show_header();
+    display_sensor_status_table();
 
     while(1)
     {
@@ -172,6 +114,8 @@ int app_main(void)
             porcentage = 100;
         }
         display_pwm_1_porcentage(porcentage);
+        display_sensor_status(get_line_sensor_1_status(), get_line_sensor_2_status(), get_line_sensor_3_status());
+        printf("| LS1: %d | LS2: %d | LS3: %d |\n", get_line_sensor_1_status(), get_line_sensor_2_status(), get_line_sensor_3_status());
         vTaskDelay(50/portTICK_RATE_MS);
     }
 }
