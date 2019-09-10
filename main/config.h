@@ -18,8 +18,8 @@
 */
 #define MOTOR_1_GPIO     GPIO_NUM_18
 #define MOTOR_1_CHANNEL  LEDC_CHANNEL_0
-#define MOTOR_1_A        GPIO_NUM_15
-#define MOTOR_1_B        GPIO_NUM_16
+#define MOTOR_1_A        GPIO_NUM_16
+#define MOTOR_1_B        GPIO_NUM_15
 
 /*
     Motor 2 specific attributes

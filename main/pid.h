@@ -12,6 +12,6 @@ struct pid
 
 typedef struct pid pidp_t;
 
-double pid_process(pidp_t *, uint32_t, uint32_t);
+uint16_t pid_process(pidp_t *, uint32_t, uint32_t);
 
 // double pid_process(uint32_t, uint32_t);

@@ -111,7 +111,6 @@ void motor_move_backward(motor_t motor)
 
 void motor_stop(motor_t motor)
 {
-    motor_set_speed(motor, 0);
     gpio_set_level(motor.gpio_a, 0);
     gpio_set_level(motor.gpio_b, 0);
 }

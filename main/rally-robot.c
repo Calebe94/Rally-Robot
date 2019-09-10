@@ -15,6 +15,9 @@
 #include "pid.h"
 
 static motor_t motor1;
+static motor_t motor2;
+
+static uint8_t movement = 0;
 
 static uint32_t setpoint_pulses = 0;
 static uint32_t pulses = 0;
@@ -77,9 +80,11 @@ static int set_pulses(int argc, char **argv)
 static void setup()
 {
     encoders_init();
+    encoders_start();
     display_init();
     motor_timer_init();
     motor1 = motor_1_init();
+    motor2 = motor_2_init();
     line_sensor_init();
     line_sensor_start();
 
@@ -98,24 +103,102 @@ static void setup()
     ESP_ERROR_CHECK( esp_console_cmd_register(&cmd) );
 }
 
-int app_main(void)
+static void demo_actuators(void *args)
 {
-    setup();
+    motor_set_speed(motor1, percentage_to_duty(100));
+    motor_set_speed(motor2, percentage_to_duty(100));
 
+    while (1)
+    {
+        motor_move_foward(motor1);
+        motor_move_foward(motor2);
+        movement = 1;
+        vTaskDelay(5000/portTICK_RATE_MS);
+
+        motor_move_backward(motor1);
+        motor_move_backward(motor2);
+        movement = 2;
+
+        vTaskDelay(5000/portTICK_RATE_MS);
+
+        motor_move_foward(motor1);
+        motor_stop(motor2);
+        movement = 3;
+
+        vTaskDelay(5000/portTICK_RATE_MS);
+
+        motor_move_foward(motor2);
+        motor_stop(motor1);
+        movement = 4;
+
+        vTaskDelay(5000/portTICK_RATE_MS);
+
+        motor_stop(motor1);
+        motor_stop(motor2);
+        movement = 0;
+    }
+}
+
+static void demo_sensors(void *args)
+{
     display_show_header();
     display_sensor_status_table();
-
+    // display_movement("Foward");    
+    pidp_t pid = {
+        .error = 0,
+        .last_sample = 0,
+        .P = 0,
+        .I = 0,
+        .D = 0,
+        .last_process = 0
+    };
+    
     while(1)
     {
-        display_encoder_1_pulses(pulses);
-        display_encoder_1_turns((uint32_t)pulses/16);
+        display_encoder_1_pulses(get_pulses_encoder_1());
+        display_encoder_2_pulses(get_pulses_encoder_2());
+        display_encoder_1_turns((uint32_t)get_pulses_encoder_1()/16);
+        display_encoder_2_turns((uint32_t)get_pulses_encoder_2()/16);
+        switch(movement)
+        {
+            case 0: 
+                display_movement("Stop");
+                break;
+            case 1: 
+                display_movement("Foward");
+                break;
+            case 2: 
+                display_movement("Backward");
+                break;
+            case 3: 
+                display_movement("Left");
+                break;
+            case 4: 
+                display_movement("Right");
+                break;
+        }
+
         if(porcentage > 99)
         {
             porcentage = 100;
         }
+        printf("PID: %d\n", pid_process(&pid, get_pulses_encoder_2(), get_pulses_encoder_1()));
+
         display_pwm_1_porcentage(porcentage);
         display_sensor_status(get_line_sensor_1_status(), get_line_sensor_2_status(), get_line_sensor_3_status());
-        printf("| LS1: %d | LS2: %d | LS3: %d |\n", get_line_sensor_1_status(), get_line_sensor_2_status(), get_line_sensor_3_status());
+        vTaskDelay(50/portTICK_RATE_MS);
+    }
+}
+
+int app_main(void)
+{
+    setup();
+
+    xTaskCreate(&demo_actuators, "demo_actuators", 4096, NULL, 1, NULL);
+    xTaskCreate(&demo_sensors, "demo_sensors", 4096, NULL, 1, NULL);
+
+    while(1)
+    {
         vTaskDelay(50/portTICK_RATE_MS);
     }
 }
