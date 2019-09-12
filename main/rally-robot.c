@@ -190,6 +190,73 @@ static void demo_sensors(void *args)
     }
 }
 
+/***************************************************************************************************
+ * Motors
+***************************************************************************************************/
+
+void move_foward()
+{
+    motor_move_foward(motor1);
+    motor_move_foward(motor2);
+}
+
+void move_backward()
+{
+    motor_move_backward(motor1);
+    motor_move_backward(motor2);
+}
+
+void move_right()
+{
+    motor_move_foward(motor2);
+    motor_stop(motor1);
+}
+
+void move_left()
+{
+    motor_move_foward(motor1);
+    motor_stop(motor2);
+}
+
+void stop()
+{
+    motor_stop(motor1);
+    motor_stop(motor2);
+}
+
+void task_rally_robot(void *arg)
+{
+    // Check: https://www.hackster.io/16336/line-follower-robot-using-arduino-5f5698
+    while(1)
+    {
+        if(get_line_sensor_1_status() && get_line_sensor_2_status() && get_line_sensor_3_status())
+        {
+            stop();
+        }
+        else
+        {
+            move_foward();
+        }
+
+        if(get_line_sensor_3_status())
+        {
+            move_left();
+        }
+
+        if(get_line_sensor_1_status())
+        {
+            move_right();
+        }
+
+        if(get_line_sensor_1_status())
+        {
+            move_right();
+        }
+        
+
+    }
+}
+
 int app_main(void)
 {
     setup();
