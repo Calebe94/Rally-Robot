@@ -71,7 +71,6 @@ motor_t motor_2_init()
         .duty       = 0,
         .gpio_num   = MOTOR_2_GPIO,
         .speed_mode = MOTOR_MODE,
-        .hpoint     = 0,
         .timer_sel  = MOTOR_TIMER
     };
 
