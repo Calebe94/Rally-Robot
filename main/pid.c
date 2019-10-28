@@ -16,7 +16,7 @@ static long millis()
     return (long)xTaskGetTickCount()*portTICK_RATE_MS;
 }
 
-double pid_process(pidp_t *pid, uint32_t setpoint, uint32_t sample)
+uint16_t pid_process(pidp_t *pid, uint32_t setpoint, uint32_t sample)
 {
     pid->error = setpoint - sample;
     
@@ -30,7 +30,7 @@ double pid_process(pidp_t *pid, uint32_t setpoint, uint32_t sample)
     pid->D = (pid->last_sample - sample) * PID_KD / delta_time;
     pid->last_sample = sample;
 
-    return (double) pid->P + pid->I + pid->D;
+    return (uint16_t) pid->P + pid->I + pid->D;
 }
 
 // double pid_process(uint32_t setpoint, uint32_t sample)

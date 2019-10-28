@@ -71,7 +71,6 @@ motor_t motor_2_init()
         .duty       = 0,
         .gpio_num   = MOTOR_2_GPIO,
         .speed_mode = MOTOR_MODE,
-        .hpoint     = 0,
         .timer_sel  = MOTOR_TIMER
     };
 
@@ -111,7 +110,6 @@ void motor_move_backward(motor_t motor)
 
 void motor_stop(motor_t motor)
 {
-    motor_set_speed(motor, 0);
     gpio_set_level(motor.gpio_a, 0);
     gpio_set_level(motor.gpio_b, 0);
 }

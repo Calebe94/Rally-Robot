@@ -14,6 +14,18 @@ void display_show_header();
 
 void display_encoder_1_pulses(uint32_t pulses);
 
+void display_encoder_2_pulses(uint32_t pulses);
+
 void display_encoder_1_turns(uint32_t turns);
 
+void display_encoder_2_turns(uint32_t turns);
+
 void display_pwm_1_porcentage(uint8_t porcentage);
+
+void display_pwm_2_porcentage(uint8_t porcentage);
+
+void display_sensor_status_table();
+
+void display_sensor_status(bool status1, bool status2, bool status3);
+
+void display_movement(char *movement);
