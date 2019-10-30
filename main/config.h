@@ -51,9 +51,24 @@
 #define PID_KD  0   // Defaul 0
 
 /*******************************
-**********LINE SENSOR**********
+**********LINE SENSOR***********
 *******************************/
 
 #define LINE_SENSOR_1   GPIO_NUM_34
 #define LINE_SENSOR_2   GPIO_NUM_35
 #define LINE_SENSOR_3   GPIO_NUM_32
+
+/*******************************
+*******ULTRASONIC SENSOR********
+*******************************/
+
+#define MAX_DISTANCE_CM 100 // 5m max
+
+#define TRIGGER_GPIO_LEFT       GPIO_NUM_26
+#define ECHO_GPIO_LEFT          GPIO_NUM_25
+
+#define TRIGGER_GPIO_RIGHT      GPIO_NUM_27
+#define ECHO_GPIO_RIGHT         GPIO_NUM_2
+
+#define TRIGGER_GPIO_FRONT      GPIO_NUM_21
+#define ECHO_GPIO_FRONT         GPIO_NUM_22
